@@ -3,7 +3,7 @@ import { it, expect, describe } from "vitest";
 import { jsx } from "../jsx";
 
 describe("react/jsx", () => {
-	it("test jsx", () => {
+	it("test jsx with children is single", () => {
 		const type = "div";
 		const key = "qwe";
 		const ref = null;
@@ -21,7 +21,7 @@ describe("react/jsx", () => {
 			ref,
 			props: {
 				...props,
-				children: [children]
+				children: children
 			},
 			__mark: "by eazy"
 		};

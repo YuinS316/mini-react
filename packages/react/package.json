@@ -1,13 +1,11 @@
 {
 	"name": "@mini-react/react",
 	"version": "1.0.0",
-	"description": "",
+	"description": "react公共方法",
 	"module": "index.ts",
-	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
+	"scripts": {},
 	"dependencies": {
-		"@mini-react/shared": "workspace:^1.0.0"
+		"@mini-react/shared": "workspace:*"
 	},
 	"keywords": [],
 	"author": "",
