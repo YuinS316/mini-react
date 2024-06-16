@@ -1,7 +1,7 @@
 export const enum WorkTag {
 	//  函数式组件
 	FunctionComponent = 0,
-	//  根节点，即ReactDom.render挂载的那个
+	//  根节点，即ReactDom.createRoot(rootElement) rootElement对应的fiberNode
 	HostRoot = 3,
 	//  <div>之类的
 	HostComponent = 5,
