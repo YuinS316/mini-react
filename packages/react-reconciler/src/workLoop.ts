@@ -63,7 +63,7 @@ function performUnitOfWork(fiber: FiberNode) {
 	//  深度优先，不断地获取子节点
 	const next = beginWork(fiber);
 
-	fiber.memorizedProps = fiber.pendingProps;
+	fiber.memoizedProps = fiber.pendingProps;
 
 	if (next === null) {
 		//  子节点没有了，获取兄弟节点

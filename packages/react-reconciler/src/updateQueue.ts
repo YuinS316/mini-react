@@ -25,17 +25,17 @@ export function createUpdate<State>(action: Action<State>) {
  * 创建消费update的数据结构
  * @returns
  */
-export function createUpdateQueue<Action>() {
+export function createUpdateQueue<State>() {
 	return {
 		shared: {
 			pending: null
 		}
-	} as UpdateQueue<Action>;
+	} as UpdateQueue<State>;
 }
 
-export function enqueueUpdate<Action>(
-	updateQueue: UpdateQueue<Action>,
-	update: Update<Action>
+export function enqueueUpdate<State>(
+	updateQueue: UpdateQueue<State>,
+	update: Update<State>
 ) {
 	updateQueue.shared.pending = update;
 }
@@ -43,19 +43,19 @@ export function enqueueUpdate<Action>(
 export function processUpdateQueue<State>(
 	baseState: State,
 	pendingUpdate: Update<State> | null
-): { memorizedState: State } {
+): { memoizedState: State } {
 	const result: ReturnType<typeof processUpdateQueue<State>> = {
-		memorizedState: baseState
+		memoizedState: baseState
 	};
 
 	if (pendingUpdate !== null) {
 		const { action } = pendingUpdate;
 		if (action instanceof Function) {
 			//  this.setState((state) => { return state + 1 })
-			result.memorizedState = action(baseState);
+			result.memoizedState = action(baseState);
 		} else {
 			//  this.setState(newState);
-			result.memorizedState = action;
+			result.memoizedState = action;
 		}
 	}
 

@@ -1,4 +1,4 @@
-import { PropsType, KeyType, RefType } from "@mini-react/shared";
+import { PropsType, KeyType, RefType, ReactElement } from "@mini-react/shared";
 import { WorkTag } from "./workTag";
 import { FiberFlag } from "./fiberFlag";
 import { Container } from "./hostConfig";
@@ -22,8 +22,8 @@ export class FiberNode {
 	//  在成为工作单元前的props
 	pendingProps: PropsType;
 	//  工作单元执行后的props
-	memorizedProps: PropsType | null;
-	memorizedState: any;
+	memoizedProps: PropsType | null;
+	memoizedState: any;
 	alternate: FiberNode | null;
 	flags: FiberFlag;
 	updateQueue: UpdateQueue<any> | null;
@@ -44,8 +44,8 @@ export class FiberNode {
 
 		//==> 工作单元
 		this.pendingProps = pendingProps;
-		this.memorizedProps = null;
-		this.memorizedState = null;
+		this.memoizedProps = null;
+		this.memoizedState = null;
 		this.alternate = null;
 		this.updateQueue = null;
 
@@ -93,8 +93,24 @@ export function createWorkInProgress(
 	wip.type = current.type;
 	wip.updateQueue = current.updateQueue;
 	wip.child = current.child;
-	wip.memorizedProps = current.memorizedProps;
-	wip.memorizedState = current.memorizedState;
+	wip.memoizedProps = current.memoizedProps;
+	wip.memoizedState = current.memoizedState;
 
 	return wip;
+}
+
+export function createFiberFromElement(element: ReactElement) {
+	const { type, key, props } = element;
+
+	const fiber = new FiberNode(WorkTag.FunctionComponent, props, key);
+	fiber.type = type;
+
+	if (typeof type === "string") {
+		//	对应<div>
+		fiber.tag = WorkTag.HostComponent;
+	} else if (typeof type !== "function") {
+		console.warn("未定义的type类型", element);
+	}
+
+	return fiber;
 }
