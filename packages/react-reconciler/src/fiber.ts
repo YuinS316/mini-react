@@ -26,6 +26,7 @@ export class FiberNode {
 	memoizedState: any;
 	alternate: FiberNode | null;
 	flags: FiberFlag;
+	subTreeFlags: FiberFlag;
 	updateQueue: UpdateQueue<any> | null;
 
 	constructor(tag: WorkTag, pendingProps: PropsType, key: KeyType) {
@@ -51,6 +52,7 @@ export class FiberNode {
 
 		//==> 副作用
 		this.flags = FiberFlag.NoFlags;
+		this.subTreeFlags = FiberFlag.NoFlags;
 	}
 }
 
@@ -88,6 +90,7 @@ export function createWorkInProgress(
 		//	update
 		wip.pendingProps = pendingProps;
 		wip.flags = FiberFlag.NoFlags;
+		wip.subTreeFlags = FiberFlag.NoFlags;
 	}
 
 	wip.type = current.type;

@@ -21,7 +21,7 @@ export const beginWork = (wip: FiberNode): FiberNode | null => {
 			return null;
 		}
 		default: {
-			console.warn("beginWork出现未知的tag类型");
+			console.warn("beginWork出现未知的tag类型", wip);
 			return null;
 		}
 	}

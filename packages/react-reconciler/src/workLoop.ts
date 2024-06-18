@@ -51,6 +51,12 @@ function renderRoot(root: FiberRootNode) {
 		}
 		// eslint-disable-next-line no-constant-condition
 	} while (true);
+
+	const finishedWork = root.current.alternate;
+	root.finishedWork = finishedWork;
+
+	//	此时就可以直接提交渲染
+	// commitRoot(root);
 }
 
 function workLoop() {
