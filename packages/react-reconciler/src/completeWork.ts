@@ -1,9 +1,10 @@
 import { FiberNode } from "./fiber";
 import {
 	appendInitialChild,
+	Container,
 	createInstance,
 	createTextInstance
-} from "./hostConfig";
+} from "hostConfig";
 import { WorkTag } from "./workTag";
 
 export const completeWork = (wip: FiberNode) => {
@@ -49,7 +50,7 @@ export const completeWork = (wip: FiberNode) => {
  * @param parent
  * @param wip
  */
-function appendAllChildren(parent: FiberNode, wip: FiberNode) {
+function appendAllChildren(parent: Container, wip: FiberNode) {
 	let node = wip.child;
 
 	while (node !== null) {

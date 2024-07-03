@@ -1,7 +1,7 @@
 import { PropsType, KeyType, RefType, ReactElement } from "@mini-react/shared";
 import { WorkTag } from "./workTag";
 import { FiberFlag } from "./fiberFlag";
-import { Container } from "./hostConfig";
+import { Container } from "hostConfig";
 import { UpdateQueue } from "./updateQueue";
 
 export class FiberNode {

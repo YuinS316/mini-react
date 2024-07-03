@@ -1,6 +1,6 @@
 import { ReactElement } from "shared";
 import { FiberNode, FiberRootNode } from "./fiber";
-import { Container } from "./hostConfig";
+import { Container } from "hostConfig";
 import { createUpdate, createUpdateQueue, enqueueUpdate } from "./updateQueue";
 import { scheduleUpdateOnFiber } from "./workLoop";
 import { WorkTag } from "./workTag";
