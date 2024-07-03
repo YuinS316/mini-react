@@ -1,6 +1,7 @@
 import { beginWork } from "./beginWork";
 import { completeWork } from "./completeWork";
 import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber";
+import { FiberFlag } from "./fiberFlag";
 import { WorkTag } from "./workTag";
 
 let workInProgress: FiberNode | null = null;
@@ -52,11 +53,39 @@ function renderRoot(root: FiberRootNode) {
 		// eslint-disable-next-line no-constant-condition
 	} while (true);
 
+	//	此时就可以直接提交渲染
+	commitRoot(root);
+}
+
+function commitRoot(root: FiberRootNode) {
 	const finishedWork = root.current.alternate;
 	root.finishedWork = finishedWork;
 
-	//	此时就可以直接提交渲染
-	// commitRoot(root);
+	if (finishedWork === null) {
+		return;
+	}
+
+	root.finishedWork = null;
+
+	console.warn("commitRoot开始", finishedWork);
+
+	const subtreeHasEffect =
+		(finishedWork.subTreeFlags & FiberFlag.MutationMask) !== FiberFlag.NoFlags;
+
+	const rootHasEffect =
+		(finishedWork.flags & FiberFlag.MutationMask) !== FiberFlag.NoFlags;
+
+	if (!subtreeHasEffect && !rootHasEffect) {
+		//	此时不需要执行下面三个阶段
+		root.current = finishedWork;
+		return;
+	}
+
+	//	分为三个阶段
+	//	beforeMutation
+	//	mutation
+	root.current = finishedWork;
+	//	layout
 }
 
 function workLoop() {
