@@ -6,6 +6,7 @@ import {
 	createTextInstance
 } from "hostConfig";
 import { WorkTag } from "./workTag";
+import { FiberFlag } from "./fiberFlag";
 
 export const completeWork = (wip: FiberNode) => {
 	const newProps = wip.pendingProps;
@@ -86,7 +87,7 @@ function appendAllChildren(parent: Container, wip: FiberNode) {
  * @param wip
  */
 function bubbleProperties(wip: FiberNode) {
-	let subTreeFlags = wip.subTreeFlags;
+	let subTreeFlags = FiberFlag.NoFlags;
 	let child = wip.child;
 
 	while (child !== null) {

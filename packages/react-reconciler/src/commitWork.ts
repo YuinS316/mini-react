@@ -16,7 +16,7 @@ export function commitMutationEffects(finishedWork: FiberNode) {
 		const hasMutationMaskFlag = (fiber: FiberNode) =>
 			(fiber.subTreeFlags & FiberFlag.MutationMask) !== FiberFlag.NoFlags;
 
-		if (child !== null && hasMutationMaskFlag(child)) {
+		if (child !== null && hasMutationMaskFlag(nextEffect)) {
 			nextEffect = child;
 		} else {
 			//  可能找到底 或者 子节点不包含对应的subtreeFlags
