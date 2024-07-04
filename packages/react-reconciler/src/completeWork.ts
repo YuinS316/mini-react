@@ -37,6 +37,10 @@ export const completeWork = (wip: FiberNode) => {
 			bubbleProperties(wip);
 			break;
 		}
+		case WorkTag.FunctionComponent: {
+			bubbleProperties(wip);
+			break;
+		}
 		default: {
 			console.warn("completeWork出现未知的tag", wip);
 			break;

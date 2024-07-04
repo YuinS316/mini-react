@@ -1,6 +1,7 @@
 import { ElementType, ReactElement } from "@mini-react/shared";
 import { mountChildFibers, reconcileChildFibers } from "./childFibers";
 import { FiberNode } from "./fiber";
+import { renderWithHooks } from "./fiberHooks";
 import { processUpdateQueue, UpdateQueue } from "./updateQueue";
 import { WorkTag } from "./workTag";
 
@@ -19,6 +20,9 @@ export const beginWork = (wip: FiberNode): FiberNode | null => {
 		}
 		case WorkTag.HostText: {
 			return null;
+		}
+		case WorkTag.FunctionComponent: {
+			return updateFunctionComponent(wip);
 		}
 		default: {
 			console.warn("beginWork出现未知的tag类型", wip);
@@ -52,6 +56,14 @@ function updateHostComponent(wip: FiberNode) {
 
 	const nextProps = wip.pendingProps;
 	const nextChildren = nextProps.children;
+	reconcileChildren(wip, nextChildren);
+	return wip.child;
+}
+
+function updateFunctionComponent(wip: FiberNode) {
+	const nextProps = wip.pendingProps;
+	const nextChildren = renderWithHooks(wip);
+
 	reconcileChildren(wip, nextChildren);
 	return wip.child;
 }

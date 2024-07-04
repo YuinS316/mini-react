@@ -3,9 +3,15 @@ import ReactDom from "@mini-react/react-dom";
 const App = () => {
 	return (
 		<div>
-			<span>hello react</span>
+			<div>
+				<Child></Child>
+			</div>
 		</div>
 	);
 };
 
-ReactDom.createRoot(document.querySelector("#app")).render(App());
+const Child = () => {
+	return <div>child</div>;
+};
+
+ReactDom.createRoot(document.querySelector("#app")).render(App);
