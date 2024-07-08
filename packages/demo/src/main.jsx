@@ -1,4 +1,5 @@
 import ReactDom from "@mini-react/react-dom";
+import { useState } from "@mini-react/react";
 
 const App = () => {
 	return (
@@ -11,7 +12,9 @@ const App = () => {
 };
 
 const Child = () => {
-	return <div>child</div>;
+	const [count, setCount] = useState(100);
+	const [num, setNum] = useState(200);
+	return <div>{count}</div>;
 };
 
 ReactDom.createRoot(document.querySelector("#app")).render(App);

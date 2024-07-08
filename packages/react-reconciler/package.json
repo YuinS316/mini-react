@@ -7,7 +7,8 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"dependencies": {
-		"@mini-react/shared": "workspace:*"
+		"@mini-react/shared": "workspace:*",
+		"@mini-react/react": "workspace:*"
 	},
 	"keywords": [],
 	"author": "",
