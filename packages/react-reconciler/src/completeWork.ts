@@ -32,8 +32,19 @@ export const completeWork = (wip: FiberNode) => {
 			break;
 		}
 		case WorkTag.HostText: {
-			const instance = createTextInstance(newProps.content);
-			wip.stateNode = instance;
+			if (current !== null && wip.stateNode) {
+				//	update
+				const oldText = current.memoizedProps.content;
+				const newText = newProps.content;
+				if (oldText !== newText) {
+					markUpdate(wip);
+				}
+			} else {
+				//	mount
+				const instance = createTextInstance(newProps.content);
+				wip.stateNode = instance;
+			}
+
 			bubbleProperties(wip);
 			break;
 		}
@@ -103,4 +114,8 @@ function bubbleProperties(wip: FiberNode) {
 	}
 
 	wip.subTreeFlags |= subTreeFlags;
+}
+
+function markUpdate(wip: FiberNode) {
+	wip.flags |= FiberFlag.Update;
 }
