@@ -43,7 +43,7 @@ function childReconciler(shouldTrackEffects: boolean) {
 				if (element.$$typeof === REACT_ELEMENT_TYPE) {
 					if (currentFiber.type === element.type) {
 						//	type相同，复用
-						const existing = useFiber(currentFiber, element.pendingProps);
+						const existing = useFiber(currentFiber, element.props);
 						existing.return = returnFiber;
 						return existing;
 					}

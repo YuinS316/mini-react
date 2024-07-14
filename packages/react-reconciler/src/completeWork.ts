@@ -20,6 +20,8 @@ export const completeWork = (wip: FiberNode) => {
 		case WorkTag.HostComponent: {
 			if (current !== null && wip.stateNode) {
 				//  stateNode存的是对应的dom节点，此时对应update
+				// markUpdate(wip);
+				bubbleProperties(wip);
 			} else {
 				//  mount
 				//  1、构建dom树

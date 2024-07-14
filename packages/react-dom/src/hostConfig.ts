@@ -1,5 +1,5 @@
 import { FiberNode } from "@mini-react/react-reconciler/src/fiber";
-import { WorkTag } from "react-reconciler/src/workTag";
+import { WorkTag } from "@mini-react/react-reconciler/src/workTag";
 
 export type Container = Element;
 export type Instance = Element;

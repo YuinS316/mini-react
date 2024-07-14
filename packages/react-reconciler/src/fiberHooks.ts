@@ -8,6 +8,7 @@ import {
 	createUpdate,
 	createUpdateQueue,
 	enqueueUpdate,
+	processUpdateQueue,
 	UpdateQueue
 } from "./updateQueue";
 import { scheduleUpdateOnFiber } from "./workLoop";
@@ -32,6 +33,7 @@ export function renderWithHooks(wip: FiberNode) {
 
 	if (current !== null) {
 		//  update
+		currentDispatcher.current = HookDispatcherOnUpdate;
 	} else {
 		//  mount
 		currentDispatcher.current = HookDispatcherOnMount;
@@ -44,9 +46,13 @@ export function renderWithHooks(wip: FiberNode) {
 
 	//  重置
 	currentlyRenderingFiber = null;
+	workInProgressHook = null;
+	currentHook = null;
 
 	return children;
 }
+
+// =========	mount hook  =========
 
 const HookDispatcherOnMount: Dispatcher = {
 	useState: mountState
@@ -65,6 +71,7 @@ function mountState<State>(
 	}
 
 	const queue = createUpdateQueue<State>();
+	hook.memoizedState = memoizedState;
 	hook.updateQueue = queue;
 
 	//  @ts-ignore
@@ -103,6 +110,78 @@ function mountWorkInProgressHook(): Hook {
 	} else {
 		workInProgressHook.next = hook;
 		workInProgressHook = hook;
+	}
+
+	return workInProgressHook;
+}
+
+// =========	update hook  =========
+//	组件对应的hook链表
+let currentHook: Hook | null = null;
+
+const HookDispatcherOnUpdate: Dispatcher = {
+	useState: updateState
+};
+
+function updateState<State>(): [State, Dispatch<State>] {
+	//	找到当前hook上次render对应的状态
+	const hook = updateWorkInProgressHook();
+
+	//	计算新state的逻辑
+	const queue = hook.updateQueue as UpdateQueue<State>;
+	const pending = queue.shared.pending;
+
+	if (pending !== null) {
+		//	执行更新
+		const { memoizedState } = processUpdateQueue(hook.memoizedState, pending);
+		hook.memoizedState = memoizedState;
+	}
+
+	return [hook.memoizedState, queue.dispatch!];
+}
+
+function updateWorkInProgressHook(): Hook {
+	let nextCurrentHook: Hook | null = null;
+
+	if (currentHook === null) {
+		//	取当前fiber的第一个hook
+		const current = currentlyRenderingFiber?.alternate;
+		if (current !== null) {
+			//	拿到hook链表
+			nextCurrentHook = current?.memoizedState;
+		} else {
+			nextCurrentHook = null;
+		}
+	} else {
+		nextCurrentHook = currentHook.next;
+	}
+
+	//	有一种边界情况，就是update的时候，hook数量变多了，这是不被允许的
+	//	mount   u1 u2 u3
+	//	update  u1 u2 u3 u4
+	//	此时update通过 拿到的旧u3.next 为 null
+	if (nextCurrentHook === null) {
+		throw new Error(`更新组件${currentlyRenderingFiber?.type}, hook数量增多`);
+	}
+
+	currentHook = nextCurrentHook as Hook;
+	const newHook: Hook = {
+		memoizedState: currentHook.memoizedState,
+		updateQueue: currentHook.updateQueue,
+		next: null
+	};
+
+	if (workInProgressHook === null) {
+		if (currentlyRenderingFiber === null) {
+			throw new Error("请在函数组件调用hook");
+		} else {
+			workInProgressHook = newHook;
+			//  函数式组件的memoizedState存储着hook链表
+			currentlyRenderingFiber.memoizedState = workInProgressHook;
+		}
+	} else {
+		workInProgressHook.next = newHook;
+		workInProgressHook = newHook;
 	}
 
 	return workInProgressHook;
