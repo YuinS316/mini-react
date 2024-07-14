@@ -1,6 +1,11 @@
 import { FiberNode, FiberRootNode } from "./fiber";
 import { FiberFlag } from "./fiberFlag";
-import { appendChildToContainer, Container } from "hostConfig";
+import {
+	appendChildToContainer,
+	commitUpdate,
+	Container,
+	removeChild
+} from "hostConfig";
 import { WorkTag } from "./workTag";
 
 let nextEffect: FiberNode | null = null;
@@ -44,14 +49,34 @@ export function commitMutationEffects(finishedWork: FiberNode) {
  * @param finishedWork
  */
 function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
-	const flags = finishedWork.flags;
-
 	//  执行placement操作
-	if ((flags & FiberFlag.Placement) !== FiberFlag.NoFlags) {
+	if (hasFlag(finishedWork, FiberFlag.Placement)) {
 		commitPlacement(finishedWork);
 		//  执行完了，移除标记
 		removeFlag(finishedWork, FiberFlag.Placement);
 	}
+
+	//	执行update操作
+	if (hasFlag(finishedWork, FiberFlag.Update)) {
+		commitUpdate(finishedWork);
+		removeFlag(finishedWork, FiberFlag.Update);
+	}
+
+	//	执行deletion操作
+	if (hasFlag(finishedWork, FiberFlag.ChildDeletion)) {
+		const deletions = finishedWork.deletions;
+		if (deletions !== null) {
+			deletions.forEach((childToDelete) => {
+				commitDeletion(childToDelete);
+			});
+		}
+	}
+}
+
+function hasFlag(fiber: FiberNode, flag: FiberFlag) {
+	const flags = fiber.flags;
+
+	return (flags & flag) !== FiberFlag.NoFlags;
 }
 
 function removeFlag(fiber: FiberNode, flag: FiberFlag) {
@@ -61,13 +86,101 @@ function removeFlag(fiber: FiberNode, flag: FiberFlag) {
 function commitPlacement(finishedWork: FiberNode) {
 	console.warn("执行placement操作", finishedWork);
 
+	//	向上递归找到父dom
 	const hostParent = getHostParent(finishedWork);
 
 	if (hostParent) {
+		//	将离屏dom插入到父dom中
 		appendPlacementNodeIntoContainer(finishedWork, hostParent);
 	}
 }
 
+function commitDeletion(childToDeletion: FiberNode) {
+	//	1、对于fc组件，需要执行useEffect的unmount操作，解绑ref
+	//	2、对于host component需要解绑ref
+	//	3、对于子树的根host component需要移除dom
+
+	let rootHostNode: FiberNode | null = null;
+
+	commitNestedComponent(childToDeletion, (unmountFiber) => {
+		switch (unmountFiber.tag) {
+			case WorkTag.HostComponent: {
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
+				}
+				//	todo: 解绑ref
+				break;
+			}
+
+			case WorkTag.HostText: {
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
+				}
+				break;
+			}
+
+			case WorkTag.FunctionComponent: {
+				//	todo: useEffect unmount
+				break;
+			}
+
+			default: {
+				console.warn("commitDeletion 未处理的fiber类型", unmountFiber);
+				break;
+			}
+		}
+	});
+
+	//	移除rootHostNode的dom
+	if (rootHostNode !== null) {
+		const hostParent = getHostParent(childToDeletion);
+		if (hostParent) {
+			removeChild(rootHostNode, hostParent);
+		}
+	}
+}
+
+//	递归子树
+function commitNestedComponent(
+	root: FiberNode,
+	onCommitUnMount: (fiber: FiberNode) => void
+) {
+	let node = root;
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		onCommitUnMount(node);
+
+		//	向下遍历
+		if (node.child !== null) {
+			node.child.return = node;
+			node = node.child;
+			continue;
+		}
+
+		if (node === root) {
+			return;
+		}
+
+		while (node.sibling === null) {
+			if (node.return === null || node.return === root) {
+				return;
+			}
+
+			//	向上归
+			node = node.return;
+		}
+
+		//	处理兄弟
+		node.sibling.return = node.return;
+		node = node.sibling;
+	}
+}
+
+/**
+ * 递归向上寻找父dom
+ * @param fiber
+ * @returns
+ */
 function getHostParent(fiber: FiberNode): Container | null {
 	let parent = fiber.return;
 
@@ -90,6 +203,12 @@ function getHostParent(fiber: FiberNode): Container | null {
 	return null;
 }
 
+/**
+ * 递归的将fiber对应的dom插入到父dom中
+ * @param finishedWork
+ * @param hostParent
+ * @returns
+ */
 function appendPlacementNodeIntoContainer(
 	finishedWork: FiberNode,
 	hostParent: Container
@@ -101,6 +220,7 @@ function appendPlacementNodeIntoContainer(
 		return;
 	}
 
+	//	不是一个真实的host节点，就要考虑向下递归构建
 	const child = finishedWork.child;
 	if (child !== null) {
 		appendPlacementNodeIntoContainer(child, hostParent);
