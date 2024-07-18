@@ -1,5 +1,6 @@
 import { FiberNode } from "@mini-react/react-reconciler/src/fiber";
 import { WorkTag } from "@mini-react/react-reconciler/src/workTag";
+import { DOMElement, updateFiberProps } from "./SyntheticEvent";
 
 export type Container = Element;
 export type Instance = Element;
@@ -7,11 +8,12 @@ export type TextInstance = Text;
 
 //  创建dom节点
 export function createInstance(type: string, props: any) {
-	const element = document.createElement(type);
+	const element = document.createElement(type) as unknown;
 
 	//  处理props
+	updateFiberProps(element as DOMElement, props);
 
-	return element;
+	return element as DOMElement;
 }
 
 //	创建文本节点

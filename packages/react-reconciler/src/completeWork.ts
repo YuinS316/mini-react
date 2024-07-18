@@ -7,6 +7,7 @@ import {
 } from "hostConfig";
 import { WorkTag } from "./workTag";
 import { FiberFlag } from "./fiberFlag";
+import { updateFiberProps } from "react-dom/src/SyntheticEvent";
 
 export const completeWork = (wip: FiberNode) => {
 	const newProps = wip.pendingProps;
@@ -20,8 +21,9 @@ export const completeWork = (wip: FiberNode) => {
 		case WorkTag.HostComponent: {
 			if (current !== null && wip.stateNode) {
 				//  stateNode存的是对应的dom节点，此时对应update
-				// markUpdate(wip);
-				bubbleProperties(wip);
+				//	判断对应的props是否有变化
+				updateFiberProps(wip.stateNode, newProps);
+				markUpdate(wip);
 			} else {
 				//  mount
 				//  1、构建dom树
@@ -29,8 +31,8 @@ export const completeWork = (wip: FiberNode) => {
 				//  2、dom树插入到对应的dom中
 				appendAllChildren(instance, wip);
 				wip.stateNode = instance;
-				bubbleProperties(wip);
 			}
+			bubbleProperties(wip);
 			break;
 		}
 		case WorkTag.HostText: {

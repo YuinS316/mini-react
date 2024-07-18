@@ -16,7 +16,8 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": _resolve("src"),
-			hostConfig: _resolve("../react-dom/src/hostConfig.ts")
+			hostConfig: _resolve("../react-dom/src/hostConfig.ts"),
+			"react-dom": _resolve("../react-dom")
 		}
 	}
 });
